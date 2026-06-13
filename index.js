@@ -17,7 +17,7 @@ import forge from 'node-forge';
 import { toUnicode } from 'punycode';
 import log from './src/log.js';
 import { readConfig, getIPAddress } from './src/config.js';
-import packageJson from './package.json' assert { type: 'json' };
+import packageJson from './package.json' with { type: 'json' };
 
 // ES Module need use fileURLToPath to get __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -366,6 +366,21 @@ readConfig().then((CONFIG) => {
           );
         }
       });
+    });
+
+    // Make a print-result callback to reply client (unified event)
+    socket.on('print-result', (options) => {
+      if (options.replyId) {
+        socket.to(options.replyId).emit('print-result', options);
+        log(
+          i18n.__(
+            '%s client: %s, templateId: %s',
+            socket.id,
+            `print-result (${options.status})`,
+            options.templateId,
+          ),
+        );
+      }
     });
 
     // Make a success callback to reply client
